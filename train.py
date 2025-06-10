@@ -56,9 +56,9 @@ def train_model(X_train, y_train):
 
     # --- 主要修改處 ---
     model = RandomForestClassifier(
-        n_estimators=100,  # 使用 100 棵樹
-        random_state=42,  # 確保結果可重現
-        class_weight='balanced',  # 處理資料不平衡
+        n_estimators=100,
+        random_state=42,
+        class_weight='balanced_subsample',
         n_jobs=-1  # 使用所有 CPU 核心加速
     )
     # --------------------
@@ -69,14 +69,15 @@ def train_model(X_train, y_train):
     return model
 
 def evaluate_model(model, X_test, y_test):
-    # 4. 模型評估
     print("\n--- 模型評估報告 ---")
-    y_pred = model.predict(X_test)
+    y_pred_probs = model.predict_proba(X_test)[:, 1]
+    threshold = 0.25
+    y_pred = (y_pred_probs >= threshold).astype(int)
     print(f"準確率 (Accuracy): {accuracy_score(y_test, y_pred):.4f}")
-    print("\n分類報告 (Classification Report):")
     print(classification_report(y_test, y_pred, digits=4))
-    print("\n混淆矩陣 (Confusion Matrix):")
+    print("混淆矩陣 (Confusion Matrix):")
     print(confusion_matrix(y_test, y_pred))
+    print("-" * 20)
     print("---------------------\n")
 
 def save_model(model, vectorizer):
